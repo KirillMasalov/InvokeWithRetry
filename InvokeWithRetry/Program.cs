@@ -4,22 +4,28 @@ namespace InvokeWithRetry
 {
     public static class Program
     {
+        private static int attemptsCount;
+        private static bool isSuccessfull;
         public static bool InvokeWithRetry(Action action, int maxAttempts)
         {
             try
             {
-                for (var i = 0; i < maxAttempts; i++)
-                    action.Invoke();
+                attemptsCount++;
+                action.Invoke();
+                isSuccessfull = true;
                 return true;
             }
             catch (Exception)
             {
-                return false;
+                if (attemptsCount >= maxAttempts)
+                    return false;
+                InvokeWithRetry(action, maxAttempts);
+                return isSuccessfull;
             }
         }
 
         public static void Main()
-        { 
+        {
         }
     }
 }

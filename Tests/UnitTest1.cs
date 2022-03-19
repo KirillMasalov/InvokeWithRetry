@@ -7,16 +7,22 @@ namespace Tests
     public class Tests
     {
         private static int attempts = 0;
+        private static int exceptionAttempts = 0;
+
         private Action attemptsAction;
         private Action exceptionAction;
+
         [SetUp]
         public void Setup()
         {
             attemptsAction = () => attempts++;
             exceptionAction = () =>
             {
-                for (var i = 0; i < 5; i++)
+                if (exceptionAttempts < 5)
+                {
+                    exceptionAttempts++;
                     throw new Exception();
+                }
             };
         }
 
@@ -24,10 +30,10 @@ namespace Tests
         public void Test1()
         {
             var successExecute = Program.InvokeWithRetry(exceptionAction, 10);
-            Assert.AreEqual(false, successExecute);
+            Assert.AreEqual(true, successExecute);
             successExecute = Program.InvokeWithRetry(attemptsAction, 10);
             Assert.AreEqual(true, successExecute);
-            Assert.AreEqual(10, attempts);
+            Assert.AreEqual(1, attempts);
         }
     }
 }
